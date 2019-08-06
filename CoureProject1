@@ -1,1 +1,128 @@
-Test
+library(knitr)
+
+# Load data and analyze
+# First mistake: read.csv("activity.csv")
+# getwd()
+
+```{r, echo = TRUE}
+setwd("~/Desktop/Project1")
+
+read.csv("activity.csv")
+activitydata <- read.csv("activity.csv")
+```
+
+# Find total steps each day and create histogram
+
+```{r, echo = TRUE}
+stepdata <- aggregate(steps ~ date, data=activitydata, sum, na.rm = TRUE)
+hist(stepdata$steps, breaks = 30, main = "Total Steps Each Day", xlab="Steps", ylab="Frequency")
+```
+
+# Find the activity data median and mean
+
+```{r, echo = TRUE}
+activitydatamedian <- median(activitydata$steps, na.rm=TRUE)
+```
+
+# Run data to verify
+
+```{r, echo = TRUE}
+activitydatamedian
+
+activitydatamean <- mean(activitydata$steps, na.rm=TRUE)
+```
+
+# Run data to verify
+
+```{r, echo = TRUE}
+activitydatamean
+```
+
+# What are the average steps taken?
+
+```{r, echo = TRUE}
+averagesteps <- aggregate(steps ~ interval, data = activitydata,mean, na.rm=TRUE)
+plot(averagesteps$interval, averagesteps$steps, type = "l", main="Average Steps per Five Minute Interval",
+     xlab="Interval Number", ylab="Steps Taken")
+```
+
+# Maximum steps taken
+
+```{r, echo = TRUE}
+moststeps <- max(averagesteps$steps, na.rm = TRUE)
+print(paste("The maximium number of steps within a 5 minute interval was", moststeps))
+```
+
+#Testing data
+
+```{r, echo = TRUE}
+NAvisual <- boxplot(activitydata, is.na, na.rm = FALSE)
+NAvisual
+```
+
+# Input missing values
+
+```{r, echo = TRUE}
+NAdata <-sum(is.na(activitydata$steps))
+print(paste("There are", NAdata, "missing data points"))     
+```
+
+# Corrected data by replacing NA values, displaying NA as zeros
+
+```{r, echo = TRUE}
+correcteddata <- activitydata
+correcteddata$steps[is.na(correcteddata$steps)] <- median(activitydata$steps, na.rm=TRUE)
+```
+
+# Test data
+
+```{r}
+correcteddata
+```
+
+#Define data by date 
+
+```{r, echo = TRUE}
+correcteddatabyday <- aggregate(steps ~ date, data=correcteddata, sum, na.rm=TRUE)
+```
+
+#Test data
+
+```{r, echo = TRUE}
+correcteddatabyday
+```
+
+# Create a histogram of corrected data
+
+```{r, echo = TRUE}
+hist(correcteddatabyday$steps, breaks=30, main="Adjusted Data of Steps per Day", xlab = "Steps")
+```
+
+# Find the mean and median of this new data
+
+```{r, echo = TRUE}
+correcteddatamedian <- median(correcteddata$steps)
+correcteddatamean <- mean(correcteddata$steps)
+print(paste("The mean is ", correcteddatamean))
+print(paste("The median is ", correcteddatamedian))
+```
+
+# Comparision between weekdays and weekends
+
+```{r, echo = TRUE}
+correcteddata$date <- as.Date(correcteddata$date)
+correcteddata$dayname <- weekdays(correcteddata$date)
+correcteddata$weekend <- as.factor(ifelse(correcteddata$dayname == "Saturday" | correcteddata$dayname == "Sunday", "weekend"
+                                          , "weekday"))
+```
+
+# Plot this data
+
+```{r, echo = TRUE}
+library(lattice)
+plotdata <- aggregate(steps ~ interval + weekend, correcteddata, mean)
+xyplot(steps ~ interval | factor(weekend), data=plotdata, aspect=1/3, type="l")
+```
+
+
+
